@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>世界 — The World You'd Bring Them Into</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.3/p5.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #08070e;
+      --rose:      #d4829a;
+      --rose-dim:  #8a5068;
+      --gold:      #c9a87c;
+      --text:      #c8b8c2;
+      --text-dim:  #6e5a64;
+      --divider:   #1e1520;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'EB Garamond', 'Noto Serif SC', serif;
+      overflow-x: hidden;
+    }
+
+    /* ── CANVAS SECTION ── */
+    #sketch-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #sketch-wrapper canvas {
+      display: block;
+    }
+
+    /* scroll cue */
+    #scroll-cue {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeCue 2s ease 4s forwards;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #scroll-cue span {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .cue-line {
+      width: 1px;
+      height: 36px;
+      background: linear-gradient(to bottom, var(--rose-dim), transparent);
+      animation: scrollLine 2s ease-in-out 4s infinite;
+    }
+
+    @keyframes fadeCue {
+      to { opacity: 1; }
+    }
+    @keyframes scrollLine {
+      0%, 100% { transform: scaleY(1); opacity: 0.5; }
+      50%       { transform: scaleY(1.3); opacity: 1; }
+    }
+
+    /* ── ESSAY SECTION ── */
+    #essay {
+      position: relative;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 120px 40px 160px;
+    }
+
+    /* decorative vertical rule */
+    #essay::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, var(--divider) 15%, var(--divider) 85%, transparent);
+    }
+
+    .essay-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--rose-dim);
+      margin-bottom: 48px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .essay-eyebrow::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--divider);
+    }
+
+    /* bilingual title block */
+    .title-block {
+      margin-bottom: 72px;
+    }
+
+    .title-zh {
+      font-family: 'Noto Serif SC', serif;
+      font-size: clamp(42px, 8vw, 72px);
+      font-weight: 300;
+      line-height: 1.1;
+      color: #e8d4dc;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .title-en {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(16px, 2.5vw, 22px);
+      font-style: italic;
+      color: var(--rose-dim);
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+
+    /* section blocks */
+    .section {
+      margin-bottom: 64px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section-label {
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--rose-dim);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--rose-dim);
+      flex-shrink: 0;
+    }
+
+    /* bilingual paragraph pairs */
+    .bilingual {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px 48px;
+      align-items: start;
+    }
+
+    @media (max-width: 600px) {
+      .bilingual { grid-template-columns: 1fr; gap: 20px; }
+    }
+
+    .lang-zh {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 14px;
+      line-height: 2;
+      font-weight: 300;
+      color: #b8a4ae;
+      letter-spacing: 0.06em;
+    }
+
+    .lang-en {
+      font-family: 'EB Garamond', serif;
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    /* mechanics grid */
+    .mechanics {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      border: 1px solid var(--divider);
+    }
+
+    .mechanic-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      border-bottom: 1px solid var(--divider);
+      opacity: 0;
+      transform: translateX(-12px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .mechanic-row:last-child { border-bottom: none; }
+
+    .mechanic-row.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .mechanic-key {
+      padding: 20px 24px;
+      border-right: 1px solid var(--divider);
+      font-family: 'Noto Serif SC', serif;
+      font-size: 11px;
+      color: var(--rose);
+      letter-spacing: 0.1em;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mechanic-key .zh { font-size: 16px; font-weight: 300; }
+    .mechanic-key .en { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); }
+
+    .mechanic-val {
+      padding: 20px 24px;
+      font-family: 'EB Garamond', serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    /* characters display */
+    .char-row {
+      display: flex;
+      gap: 0;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .char-pill {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 22px;
+      font-weight: 300;
+      padding: 10px 16px;
+      border: 1px solid var(--divider);
+      margin: -1px 0 0 -1px;
+      transition: color 0.3s, border-color 0.3s;
+      cursor: default;
+      position: relative;
+    }
+
+    .char-pill::after {
+      content: attr(data-meaning);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1220;
+      color: var(--text);
+      font-family: 'EB Garamond', serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      padding: 5px 10px;
+      border: 1px solid var(--divider);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .char-pill:hover::after {
+      opacity: 1;
+    }
+
+    .char-pill.hope { color: #c09ab8; }
+    .char-pill.hope:hover { color: #e8d4dc; border-color: var(--rose-dim); }
+    .char-pill.fear { color: #7a4a58; }
+    .char-pill.fear:hover { color: #b06070; border-color: #7a4a58; }
+
+    .char-label {
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-top: 12px;
+    }
+
+    /* closing quote */
+    .closing {
+      margin-top: 80px;
+      padding-top: 48px;
+      border-top: 1px solid var(--divider);
+      text-align: center;
+    }
+
+    .closing-zh {
+      font-family: 'Noto Serif SC', serif;
+      font-size: clamp(18px, 4vw, 28px);
+      font-weight: 300;
+      color: #d4b0be;
+      line-height: 1.8;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    .closing-en {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: clamp(14px, 2vw, 18px);
+      color: var(--text-dim);
+      line-height: 1.8;
+    }
+
+    /* footer */
+    footer {
+      text-align: center;
+      padding: 48px 24px;
+      border-top: 1px solid var(--divider);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    /* grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── SKETCH ── -->
+  <div id="sketch-wrapper">
+    <div id="scroll-cue">
+      <span>scroll</span>
+      <div class="cue-line"></div>
+    </div>
+  </div>
+
+  <!-- ── ESSAY ── -->
+  <section id="essay">
+
+    <div class="essay-eyebrow">Artist's Note &nbsp;·&nbsp; 创作说明</div>
+
+    <div class="title-block section">
+      <div class="title-zh">世界</div>
+      <div class="title-en">The World You'd Bring Them Into</div>
+    </div>
+
+    <!-- Concept -->
+    <div class="section">
+      <div class="section-label">Concept · 概念</div>
+      <div class="bilingual">
+        <div class="lang-zh">
+          这件作品从一个问题开始：如果你决定生育，你会把一个孩子带进怎样的世界？不是你期待中的那个，也不是某个将来也许会变好的世界，而是现在这个，此刻正在运转、已经很沉重的世界。<br><br>
+          这个问题并不好回答。但它越来越难被忽视。
+        </div>
+        <div class="lang-en">
+          This piece starts from a question I kept coming back to: if you were to have a child, what world would you actually be bringing them into? Not some future version of things, not the world you hope it becomes. The world as it is right now, already under pressure, already asking things of the people living in it.<br><br>
+          It is not a comfortable question to sit with. But it is one that feels increasingly hard to ignore.
+        </div>
+      </div>
+    </div>
+
+    <!-- What You're Seeing -->
+    <div class="section">
+      <div class="section-label">What You're Seeing · 你所看见的</div>
+      <div class="bilingual">
+        <div class="lang-zh">
+          画面中央是一个字：子。它发光，它跳动，暂时地，被保护着。<br><br>
+          围绕它的，是约一千五百个节点构成的弹性网格，每一个都承载着一个汉字：家、爱、暖、梦。它们通过弹簧相互连接，构成一个有呼吸感的世界，而这个世界，从一开始就已经在承受压力。<br><br>
+          左上角的成语随着节点的转变悄悄更迭，从「希望尚存」，到「摇摇欲坠」，再到「岌岌可危」。这些成语承载着千年的重量。看着它们一个个改变，是一种无声的哀愁。
+        </div>
+        <div class="lang-en">
+          At the centre of the canvas sits a single glowing character, 子 <em>(zǐ)</em>, meaning child. It pulses gently, anchored, untouched by everything happening around it.<br><br>
+          Surrounding it are roughly 1,500 nodes arranged in a living mesh, each one carrying a word: home, love, warmth, continuity, dream. They are connected by springs and hold together like a breathing world, one that is, from the very first moment, already under strain.<br><br>
+          In the top left corner, a single phrase tracks the state of the world. It shifts as more nodes turn from hope to fear, moving from 希望尚存 <em>(xīwàng shàng cún)</em> (hope still remains), to 摇摇欲坠 <em>(yáoyáo yù zhuì)</em> (teetering on the edge), to 岌岌可危 <em>(jíjí kě wēi)</em> (in grave danger). These are classical Chinese idioms, tucked into the corner small enough that you might not register them at first. But if you stay long enough to watch them shift, that's when the weight of it settles.
+        </div>
+      </div>
+    </div>
+
+    <!-- The Three Forces -->
+    <div class="section">
+      <div class="section-label">The Three Forces · 三种力量</div>
+      <div class="mechanics">
+        <div class="mechanic-row">
+          <div class="mechanic-key"><span class="zh">压缩</span><span class="en">Compression</span></div>
+          <div class="mechanic-val">From the very first frame, every node is being pushed inward. Slowly at first, easy to miss. But it never pauses, never eases, and it only grows stronger the longer the piece runs.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-key"><span class="zh">护盾</span><span class="en">Your Shield</span></div>
+          <div class="mechanic-val">Holding the mouse down lets you push back against the compression, creating a small pocket of resistance around your cursor. It works. But the moment you let go, the world fills the space you made, as though your effort was never there.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-key"><span class="zh">熵</span><span class="en">Entropy</span></div>
+          <div class="mechanic-val">As time passes, the compression accelerates. The longer you stay, the harder it becomes to hold things in place. There is no stable state to reach, no point at which things settle, only the ongoing effort of keeping the world from collapsing inward.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- The Characters -->
+    <div class="section">
+      <div class="section-label">The Characters · 字符的意义</div>
+      <div class="bilingual">
+        <div class="lang-zh">
+          当节点被压迫得太近，希望的字翻转为恐惧的字。它们的偏旁部首在瞬间碎裂，如粒子般飘落，那是意义本身在解体。
+        </div>
+        <div class="lang-en">
+          When a node is squeezed too far toward the centre, it transforms: the character it carries flips from hope to fear. Words like love and warmth become debt, exhaustion, loneliness, loss. As they turn, their constituent radicals break off and drift away as particles, as though the meaning itself is coming undone.
+        </div>
+      </div>
+
+      <div style="margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div>
+          <div class="char-row">
+            <div class="char-pill hope" data-meaning="child">子</div><div class="char-pill hope" data-meaning="home">家</div><div class="char-pill hope" data-meaning="love">爱</div>
+            <div class="char-pill hope" data-meaning="warmth">暖</div><div class="char-pill hope" data-meaning="continuity">续</div><div class="char-pill hope" data-meaning="roots">根</div>
+            <div class="char-pill hope" data-meaning="hope">望</div><div class="char-pill hope" data-meaning="life">生</div><div class="char-pill hope" data-meaning="light">光</div>
+            <div class="char-pill hope" data-meaning="dream">梦</div>
+          </div>
+          <div class="char-label" style="color: #8a6070;">Hope · 希望</div>
+        </div>
+        <div>
+          <div class="char-row">
+            <div class="char-pill fear" data-meaning="money">钱</div><div class="char-pill fear" data-meaning="debt">债</div><div class="char-pill fear" data-meaning="suffering">苦</div>
+            <div class="char-pill fear" data-meaning="exhaustion">累</div><div class="char-pill fear" data-meaning="worry">忧</div><div class="char-pill fear" data-meaning="loneliness">孤</div>
+            <div class="char-pill fear" data-meaning="hardship">难</div><div class="char-pill fear" data-meaning="heat">热</div><div class="char-pill fear" data-meaning="chaos">乱</div>
+            <div class="char-pill fear" data-meaning="loss">失</div>
+          </div>
+          <div class="char-label" style="color: #5a3a44;">Fear · 恐惧</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Character Radicals -->
+    <div class="section">
+      <div class="section-label">Character Radicals · 偏旁部首</div>
+      <div class="bilingual">
+        <div class="lang-zh">
+          汉字并非任意的符号，每一个字都由更小的语义或语音单元构成，称为偏旁部首。当一个节点崩塌，它所承载的字的部首便作为粒子飘散。意义不只是消失了，而是被眼睁睁地看着拆解。
+        </div>
+        <div class="lang-en">
+          Chinese characters are not arbitrary marks. Each one is built from smaller units called radicals, carrying semantic or phonetic meaning. When a node collapses in this piece, those radicals break off and drift away as particles. The meaning doesn't just disappear; it comes apart in front of you.
+        </div>
+      </div>
+
+      <div style="margin-top: 32px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start;">
+          <div>
+            <div style="font-family: 'EB Garamond', serif; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--rose-dim); margin-bottom: 14px;">Example · 以债为例</div>
+            <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px;">
+              <span style="font-family: 'Noto Serif SC', serif; font-size: 44px; font-weight: 300; color: #b06070; line-height: 1;">债</span>
+              <span style="font-family: 'EB Garamond', serif; font-style: italic; font-size: 15px; color: var(--text-dim);">zhài · debt</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+              <span style="font-family: 'Noto Serif SC', serif; font-size: 26px; color: var(--text);">亻</span>
+              <span style="font-family: 'EB Garamond', serif; font-size: 14px; color: var(--text-dim);">+</span>
+              <span style="font-family: 'Noto Serif SC', serif; font-size: 26px; color: var(--text);">责</span>
+              <span style="font-family: 'EB Garamond', serif; font-size: 14px; color: var(--text-dim); font-style: italic; margin-left: 4px;">= 债</span>
+            </div>
+            <div class="lang-en" style="font-size: 14px; color: var(--text-dim);">
+              亻 (person) + 责 (responsibility / reproach). A person burdened by obligation. The shape of debt is already written into its parts.
+            </div>
+          </div>
+          <div>
+            <div style="font-family: 'EB Garamond', serif; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--rose-dim); margin-bottom: 14px;">All fear characters</div>
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 0 14px; font-family: 'EB Garamond', serif; font-size: 14px; line-height: 2.1; color: var(--text-dim);">
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">钱</span><span>金 (metal/money) + 戋 (small, scarce)</span>
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">债</span><span>亻 (person) + 责 (responsibility)</span>
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">苦</span><span>艹 (grass) + 古 (old, bitter)</span>
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">累</span><span>田 (field) + 糸 (thread, tangled)</span>
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">忧</span><span>忄 (heart) + 尤 (exceptional pain)</span>
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">孤</span><span>子 (child) + 瓜 (melon, alone)</span>
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">难</span><span>又 (again) + 隹 (bird, trapped)</span>
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">热</span><span>火 (fire) + 执 (to hold)</span>
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">乱</span><span>舌 (tongue) + 乙 (twisting, coiled)</span>
+              <span style="font-family: 'Noto Serif SC', serif; color: #8a4455;">失</span><span>一 + 大 — something slipping from a hand</span>
+            </div>
+          </div>
+        </div>
+        <div class="lang-en" style="margin-top: 24px; font-style: italic; font-size: 15px; color: var(--text-dim);">
+          Notice that 孤 <em>(gū)</em> (loneliness) contains 子 <em>(zǐ)</em>, the character for child. That loneliness is built from child is not a coincidence, but a kind of ancient, embedded truth about what it means to bring someone into the world.
+        </div>
+      </div>
+    </div>
+
+    <!-- What It Doesn't Tell You -->
+    <div class="section">
+      <div class="section-label">What It Doesn't Tell You · 它没有说的</div>
+      <div class="bilingual">
+        <div class="lang-zh">
+          这件作品没有答案。它不告诉你该不该生育，不评判你的选择，也不给出出路。<br><br>
+          它只是让你坐在那里，感受一个尚未出生的生命周围的世界正在收缩，然后，问你还要撑多久。
+        </div>
+        <div class="lang-en">
+          This piece doesn't take a position. It doesn't tell you whether having children is the right choice, and it doesn't offer any resolution. There's no ending that rewards you for holding on, no message that appears when the world finally collapses.<br><br>
+          What it offers is the experience of being responsible for something fragile in a world that was never designed to make that easy, and the quiet, open question of how long you're willing to keep trying.
+        </div>
+      </div>
+    </div>
+
+    <!-- Why 子 Remains -->
+    <div class="section">
+      <div class="section-label">Why 子 Never Falls · 为何子留存</div>
+      <div class="bilingual">
+        <div class="lang-zh">
+          你可能会注意到，无论世界如何崩塌，子始终留在那里。这是刻意为之的。它置身于这个系统之外，因为它尚未降生其中，还是一个未曾做出的决定，一个尚未来到这个世界的生命。<br><br>
+          也正因如此，世界里发生的一切都触碰不到它。而这或许才是最难承受的地方。在一切消散之后，那个问题依然悬在那里，没有答案，等着你去回应。
+        </div>
+        <div class="lang-en">
+          You might notice that no matter how far the world collapses, 子 <em>(zǐ)</em> never falls. It stays at the centre while everything around it comes apart. That was intentional. It sits outside the system because it was never born into it yet. It is still a decision unmade, a life not yet brought into being.<br><br>
+          And because it hasn't entered this world yet, nothing that happens in it can reach it. That's what makes it the hardest part to sit with. Even after everything else is gone, the question is still there, still open, still waiting for an answer you haven't given yet.
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <div style="text-align: right; padding: 0 40px 64px; max-width: 720px; margin: 0 auto;">
+    <a href="reflection.html" style="
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #6e5a64;
+      text-decoration: none;
+      border: 1px solid #1e1520;
+      padding: 14px 24px;
+      transition: color 0.3s, border-color 0.3s;
+    "
+    onmouseover="this.style.color='#d4829a'; this.style.borderColor='#d4829a';"
+    onmouseout="this.style.color='#6e5a64'; this.style.borderColor='#1e1520';">
+      Read the Reflection
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </a>
+  </div>
+
+  <footer>世界 &nbsp;·&nbsp; 2025 &nbsp;·&nbsp; Interactive Digital Art &nbsp;·&nbsp; Koh Xin Jie Raiyi</footer>
+
+  <!-- ── P5 SKETCH ── -->
+  <script>
+  const GRID      = 12;
+  const K_SPRING  = 0.16;
+  const DAMPING   = 0.91;
+  const PUSH_R    = 52;
+  const PUSH_F    = 3.8;
+  const COMPRESS_F= 0.0008;
+  const BEAT_SPD  = 0.035;
+
+  const HOPE_CHARS = ['子','家','爱','暖','续','根','望','生','光','梦'];
+  const FEAR_CHARS = ['钱','债','苦','累','忧','孤','难','热','乱','失'];
+  const CHILD_CHAR = '子';
+
+  const FEAR_RADICALS = {
+    '钱': ['金','戋'], '债': ['亻','责'], '苦': ['艹','古'],
+    '累': ['田','糸'], '忧': ['忄','尤'], '孤': ['子','瓜'],
+    '难': ['又','隹'], '热': ['火','执'], '乱': ['舌','乙'],
+    '失': ['失'],
+  };
+
+  let nodes=[], springs=[], particles=[];
+  let beatPhase=0, vitality=1, childNode=null;
+  let started=false, timeAlive=0;
+  let cx, cy, R;
+
+  const sketch = (p) => {
+
+    p.setup = () => {
+      const cnv = p.createCanvas(p.windowWidth, p.windowHeight);
+      cnv.parent('sketch-wrapper');
+      p.textFont('serif');
+      buildWorld(p);
+    };
+
+    p.draw = () => {
+      p.background(8, 7, 14);
+      if (!started) { drawOpening(p); return; }
+      timeAlive++;
+      beatPhase += BEAT_SPD;
+      const entropy = p.min(timeAlive / 4000, 1);
+      const comp = COMPRESS_F * (1 + entropy * 2.5);
+      applyCompression(p, comp);
+      applyShield(p);
+      updatePhysics(p);
+      transformNodes(p, entropy);
+      let feared = 0;
+      for (const n of nodes) if (n.feared || n.collapsed) feared++;
+      vitality = p.max(0, 1 - feared / nodes.length);
+      drawSprings(p);
+      drawNodes(p);
+      drawParticles(p);
+      drawChildGlow(p);
+      drawUI(p, entropy);
+    };
+
+    p.mousePressed = () => { if (!started) started = true; };
+    p.keyPressed   = () => { if (p.key==='r'||p.key==='R') buildWorld(p); };
+    p.windowResized= () => { p.resizeCanvas(p.windowWidth, p.windowHeight); buildWorld(p); };
+  };
+
+  function buildWorld(p) {
+    nodes=[]; springs=[]; particles=[];
+    vitality=1; beatPhase=0; timeAlive=0; started=false; childNode=null;
+    cx=p.width/2; cy=p.height/2;
+    R=p.min(p.width,p.height)*0.36;
+
+    const nodeMap = new Map();
+    const rows = Math.ceil(R / (GRID * 0.866));
+    for (let row=-rows; row<=rows; row++) {
+      const offset = (row%2===0) ? 0 : GRID*0.5;
+      const cols = Math.ceil(R/GRID);
+      for (let col=-cols; col<=cols; col++) {
+        const wx = cx + col*GRID + offset;
+        const wy = cy + row*(GRID*0.866);
+        const d  = p.dist(wx, wy, cx, cy);
+        if (d <= R-2) {
+          const idx = nodes.length;
+          const isChild = (d < GRID*1.2);
+          nodes.push({
+            x:wx,y:wy,px:wx,py:wy,
+            char: isChild ? CHILD_CHAR : p.random(HOPE_CHARS),
+            isChild, feared:false, collapsed:false, alpha:255,
+            springCount:0, distFromCentre:d, fearTimer:0,
+          });
+          if (isChild && !childNode) childNode = nodes[idx];
+          nodeMap.set(`${col},${row}`, idx);
+        }
+      }
+    }
+
+    const dirs=[[1,0],[0,1],[1,1],[1,-1]];
+    for (const [key,i] of nodeMap) {
+      const [c,r]=key.split(',').map(Number);
+      for (const [dc,dr] of dirs) {
+        const nb=nodeMap.get(`${c+dc},${r+dr}`);
+        if (nb!==undefined) {
+          const diag=(dc!==0&&dr!==0);
+          springs.push({a:i,b:nb,rest:diag?GRID*Math.SQRT2:GRID,diag});
+          nodes[i].springCount++;
+          nodes[nb].springCount++;
+        }
+      }
+    }
+  }
+
+  function drawOpening(p) {
+    p.noStroke(); p.textAlign(p.CENTER,p.CENTER);
+    for (const n of nodes) {
+      p.fill(180,120,160,60); p.textSize(GRID*0.9); p.text(n.char,n.x,n.y);
+    }
+    const pulse = p.sin(p.frameCount*0.04)*0.15+0.85;
+    p.fill(230,180,200,240*pulse); p.textSize(22); p.textFont('serif');
+    p.text('你会把他们带进怎样的世界？',cx,cy-44);
+    p.fill(180,140,160,180*pulse); p.textSize(14);
+    p.text('What kind of world would you bring them into?',cx,cy-14);
+    p.fill(160,130,150,180); p.textSize(13);
+    p.text('click to begin · drag to shield · the world will not wait',cx,cy+22);
+  }
+
+  function applyCompression(p,f) {
+    for (const n of nodes) {
+      if (n.isChild) continue;
+      const dx=n.x-cx, dy=n.y-cy;
+      const d=p.sqrt(dx*dx+dy*dy)||1;
+      n.x-=(dx/d)*f*d*0.5; n.y-=(dy/d)*f*d*0.5;
+    }
+  }
+
+  function applyShield(p) {
+    if (!p.mouseIsPressed) return;
+    for (const n of nodes) {
+      const d=p.dist(p.mouseX,p.mouseY,n.x,n.y);
+      if (d<PUSH_R&&d>0) {
+        const f=p.pow(1-d/PUSH_R,1.5)*PUSH_F;
+        const dx=n.x-p.mouseX, dy=n.y-p.mouseY;
+        const len=p.sqrt(dx*dx+dy*dy)||1;
+        n.x+=dx/len*f; n.y+=dy/len*f;
+      }
+    }
+  }
+
+  function updatePhysics(p) {
+    for (const n of nodes) {
+      if (n.collapsed) continue;
+      const vx=(n.x-n.px)*DAMPING, vy=(n.y-n.py)*DAMPING;
+      n.px=n.x; n.py=n.y;
+      if (n.isChild) {
+        n.x+=(cx-n.x)*0.08+vx; n.y+=(cy-n.y)*0.08+vy;
+      } else { n.x+=vx; n.y+=vy; }
+    }
+    for (let iter=0;iter<3;iter++) {
+      for (const s of springs) {
+        const a=nodes[s.a],b=nodes[s.b];
+        if (a.collapsed||b.collapsed) continue;
+        const dx=b.x-a.x, dy=b.y-a.y;
+        const d=p.sqrt(dx*dx+dy*dy)||0.001;
+        const f=(d-s.rest)/d*K_SPRING*0.5;
+        if (!a.isChild){a.x+=dx*f;a.y+=dy*f;}
+        if (!b.isChild){b.x-=dx*f;b.y-=dy*f;}
+      }
+    }
+  }
+
+  function transformNodes(p, entropy) {
+    for (const n of nodes) {
+      if (n.isChild||n.collapsed) continue;
+      const d=p.dist(n.x,n.y,cx,cy);
+      const squeeze=n.distFromCentre>0?1-(d/n.distFromCentre):0;
+      if (!n.feared&&squeeze>0.38+(1-entropy)*0.2) {
+        n.fearTimer++;
+        if (n.fearTimer>18) {
+          n.feared=true; n.char=p.random(FEAR_CHARS);
+          n.fearTimer=0; spawnParticles(p,n);
+        }
+      } else if (!n.feared) { n.fearTimer=p.max(0,n.fearTimer-1); }
+      if (d<GRID*2.5&&!n.isChild) { n.collapsed=true; spawnCollapse(p,n); }
+    }
+  }
+
+  function spawnParticles(p,n) {
+    const rads=FEAR_RADICALS[n.char]||[n.char];
+    for (const r of rads) {
+      particles.push({x:n.x,y:n.y,vx:p.random(-1.8,1.8),vy:p.random(-2.5,-0.3),
+        char:r,alpha:220,angle:p.random(p.TWO_PI),spin:p.random(-0.05,0.05),isCollapse:false});
+    }
+  }
+
+  function spawnCollapse(p,n) {
+    particles.push({x:n.x,y:n.y,vx:p.random(-0.8,0.8),vy:p.random(-1.2,0.2),
+      char:n.char,alpha:180,angle:p.random(p.TWO_PI),spin:p.random(-0.03,0.03),isCollapse:true});
+  }
+
+  function drawParticles(p) {
+    p.textAlign(p.CENTER,p.CENTER);
+    for (let i=particles.length-1;i>=0;i--) {
+      const pt=particles[i];
+      pt.vy+=pt.isCollapse?0.04:0.18; pt.vx*=0.97;
+      pt.x+=pt.vx; pt.y+=pt.vy;
+      pt.alpha-=pt.isCollapse?1.2:3; pt.angle+=pt.spin;
+      if (pt.alpha<=0){particles.splice(i,1);continue;}
+      p.push(); p.translate(pt.x,pt.y); p.rotate(pt.angle);
+      const t=pt.alpha/220;
+      const col=p.lerpColor(p.color(130,130,150),p.color(200,100,130),t);
+      p.fill(p.red(col),p.green(col),p.blue(col),pt.alpha);
+      p.noStroke(); p.textSize(GRID*0.82); p.text(pt.char,0,0); p.pop();
+    }
+  }
+
+  function drawSprings(p) {
+    p.strokeWeight(0.5);
+    for (const s of springs) {
+      const a=nodes[s.a],b=nodes[s.b];
+      if (a.collapsed||b.collapsed) continue;
+      p.stroke(a.feared||b.feared?p.color(140,70,90,25):p.color(160,120,180,22));
+      p.line(a.x,a.y,b.x,b.y);
+    }
+  }
+
+  function drawNodes(p) {
+    p.noStroke(); p.textAlign(p.CENTER,p.CENTER);
+    const sz=GRID*0.92;
+    for (const n of nodes) {
+      if (n.collapsed||n.isChild) continue;
+      let c;
+      if (n.feared) {
+        const t=p.min(1,(timeAlive-60)/600);
+        c=p.lerpColor(p.color(200,90,110),p.color(110,90,100),t*0.5);
+      } else {
+        c=p.lerpColor(p.color(230,170,200),p.color(200,140,190),0.4);
+      }
+      p.fill(p.red(c),p.green(c),p.blue(c),n.alpha);
+      p.textSize(sz); p.text(n.char,n.x,n.y);
+    }
+  }
+
+  function drawChildGlow(p) {
+    if (!childNode) return;
+    const pulse=p.sin(beatPhase*2)*0.3+0.7;
+    const glowR=GRID*2.5*pulse;
+    p.noStroke();
+    for (let r=glowR;r>0;r-=2) {
+      const a=p.map(r,0,glowR,80,0)*vitality;
+      p.fill(240,200,220,a); p.ellipse(childNode.x,childNode.y,r*2,r*2);
+    }
+    const childSize=GRID*1.4*(0.9+pulse*0.1);
+    p.fill(255,220,235,240); p.textAlign(p.CENTER,p.CENTER);
+    p.textSize(childSize); p.text(CHILD_CHAR,childNode.x,childNode.y);
+  }
+
+  function drawUI(p, entropy) {
+    p.noFill(); p.strokeWeight(1.5);
+    p.stroke(60,40,55);
+    p.arc(cx,cy,R*2+22,R*2+22,-p.HALF_PI,-p.HALF_PI+p.TWO_PI);
+    const vCol=p.lerpColor(p.color(160,60,80),p.color(200,160,210),vitality);
+    p.stroke(p.red(vCol),p.green(vCol),p.blue(vCol),180);
+    p.arc(cx,cy,R*2+22,R*2+22,-p.HALF_PI,-p.HALF_PI+p.TWO_PI*vitality);
+    p.fill(120,90,110,160); p.noStroke();
+    p.textAlign(p.RIGHT,p.TOP); p.textSize(10); p.textFont('serif');
+    p.text('世界压力 '+p.nf(entropy*100,1,0)+'%',p.width-22,22);
+    if (p.mouseIsPressed) {
+      p.noFill(); p.stroke(180,160,220,50); p.strokeWeight(1);
+      p.ellipse(p.mouseX,p.mouseY,PUSH_R*2,PUSH_R*2);
+    } else {
+      p.fill(110,85,100,120); p.noStroke();
+      p.textAlign(p.CENTER,p.BOTTOM); p.textSize(10);
+      p.text('按住鼠标保护这个世界  ·  hold to shield  ·  R to reset',cx,p.height-18);
+    }
+    p.textAlign(p.LEFT,p.TOP); p.fill(150,110,130,150); p.textSize(10);
+    const hopeLabel=vitality>0.66?'希望尚存':vitality>0.33?'摇摇欲坠':'岌岌可危';
+    p.text(hopeLabel,22,22);
+  }
+
+  new p5(sketch);
+
+  // ── SCROLL REVEAL ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.section').forEach(el => observer.observe(el));
+
+  const mechObs = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 120);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.mechanic-row').forEach(el => mechObs.observe(el));
+  </script>
+</body>
+</html>

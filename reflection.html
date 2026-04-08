@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reflection — 世界</title>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f7f4f0;
+      --ink:      #2a2320;
+      --ink-dim:  #8a7f78;
+      --ink-faint:#c4bdb8;
+      --rose:     #9a5a60;
+      --rule:     #ddd8d2;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'EB Garamond', serif;
+      min-height: 100vh;
+    }
+
+    /* ── BACK BUTTON ── */
+    .back-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 18px 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--rule);
+      z-index: 100;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'EB Garamond', serif;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .back-btn:hover { color: var(--rose); }
+
+    .back-btn svg {
+      width: 14px; height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ── PAGE ── */
+    .page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 120px 40px 160px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      margin-bottom: 72px;
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.2s forwards;
+    }
+
+    .header-label {
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--rose);
+      margin-bottom: 24px;
+    }
+
+    .header-title {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 400;
+      line-height: 1.25;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+
+    .header-sub {
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    /* ── HOOK ── */
+    .hook {
+      font-size: clamp(18px, 3vw, 24px);
+      font-style: italic;
+      line-height: 1.6;
+      color: var(--ink-dim);
+      padding: 32px 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 56px;
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.4s forwards;
+    }
+
+    /* ── BODY TEXT ── */
+    .body-text {
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.6s forwards;
+    }
+
+    p {
+      font-size: clamp(16px, 2vw, 19px);
+      line-height: 1.85;
+      color: var(--ink);
+      margin-bottom: 28px;
+    }
+
+    p:last-child { margin-bottom: 0; }
+
+    /* ── SECTION BREAKS ── */
+    .section-break {
+      margin: 56px 0 36px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .section-number {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      color: var(--rose);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: clamp(17px, 2.5vw, 22px);
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .section-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    /* ── PULL QUOTES ── */
+    .pull {
+      margin: 40px 0;
+      padding: 24px 32px;
+      border-left: 2px solid var(--rose);
+      font-style: italic;
+      font-size: clamp(15px, 2vw, 18px);
+      line-height: 1.7;
+      color: var(--ink-dim);
+    }
+
+    /* ── INTRO BLOCK ── */
+    .intro-block {
+      margin-bottom: 48px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .intro-block p {
+      color: var(--ink-dim);
+      font-size: clamp(15px, 2vw, 17px);
+    }
+
+    /* ── VOICES BLOCK ── */
+    .voices {
+      margin: 48px 0 8px;
+      padding: 28px 32px;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      font-style: italic;
+      font-size: clamp(15px, 2vw, 18px);
+      line-height: 1.9;
+      color: var(--ink-dim);
+    }
+
+    .voices-commentary {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: clamp(13px, 1.8vw, 15px);
+      color: var(--ink-faint);
+      margin-bottom: 36px;
+      padding: 0 32px;
+    }
+
+    .aside {
+      font-style: italic;
+      color: var(--ink-faint);
+    }
+
+    a.ref {
+      color: inherit;
+      text-decoration: underline;
+      text-decoration-color: var(--ink-faint);
+      text-underline-offset: 3px;
+      transition: text-decoration-color 0.2s, color 0.2s;
+    }
+
+    a.ref:hover {
+      color: var(--rose);
+      text-decoration-color: var(--rose);
+    }
+
+    /* ── CONCLUSION ── */
+    .conclusion {
+      margin-top: 72px;
+      padding-top: 48px;
+      border-top: 1px solid var(--rule);
+    }
+
+    .conclusion p {
+      color: var(--ink-dim);
+    }
+
+    .conclusion .final {
+      font-size: clamp(17px, 2.5vw, 21px);
+      font-style: italic;
+      color: var(--ink);
+      margin-top: 32px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 80px;
+      padding-top: 32px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    footer a {
+      color: var(--ink-faint);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    footer a:hover { color: var(--rose); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* scroll reveal for sections */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 600px) {
+      .page { padding: 100px 24px 120px; }
+      .back-bar { padding: 16px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- back button -->
+  <nav class="back-bar">
+    <a href="index.html" class="back-btn">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to 世界
+    </a>
+  </nav>
+
+  <div class="page">
+
+    <!-- header -->
+    <div class="header">
+      <div class="header-label">Personal Reflection</div>
+      <h1 class="header-title">On Bringing a Life<br>Into This World</h1>
+      <div class="header-sub">A thought process behind 世界</div>
+    </div>
+
+ <!-- body -->
+    <div class="body-text">
+      <p>I sat with this idea for a long time before making anything. It came from a mix of opinions, experiences, and a growing frustration at how casually people talk about a decision as permanent as bringing a child into this world. At some point, I realised that simply writing it out wouldn’t make people feel the question before encountering it.</p>
+      <p>That’s where 世界 (shì jiè), the interactive digital piece, came in. I could have created something more straightforward, laid out statistics, mapped the financial realities of raising a child in Singapore, or built a clean, logical argument for why this decision deserves more thought than it usually gets. But information alone didn’t feel sufficient.</p>
+      <p>Instead, I tried to build something that mirrors the feeling itself: a world already under pressure the moment you enter it, centered around a life not yet decided, one that remains beyond your control no matter how tightly you hold on. My hope was that people might feel the weight of the question before I ever spell it out.</p>
+      <p>This reflection comes before the piece, the thoughts and experiences that led me to create 世界 (shì jiè) in the first place. And to be clear, the interactive piece isn’t an argument against having children. What I’m questioning is the way the conversation often happens: without much thought, on autopilot, asked without deeper consideration.</p>
+      <p>Speaking of which.</p>
+   
+    </div>
+
+    <div style="margin: 2em 0;"></div>   <!-- ← add this line -->
+
+    <!-- hook -->
+    <div class="hook">
+      At some point, "So… when are you having kids?" stops sounding like a question and starts sounding like a deadline.
+    </div>
+
+    <!-- body -->
+    <div class="body-text">
+
+      <p>And the weird thing is, it rarely comes from strangers. It comes from people who know you, people who are supposedly close to you, people who genuinely believe they're asking something reasonable. Which makes it harder to push back on, because you don't want to seem ungrateful or defensive or like you're making a big deal out of nothing. So you laugh it off, or you give a vague non-answer, or you say "maybe someday" and hope the conversation moves on. But the question lingers, and over time it starts to feel less like curiousity and more like an expectation you haven't met yet. </p>
+
+      <p>I've been sitting with that feeling for a while now, and I think what bothers me most isn't the question itself but the assumption underneath it, that having children is the natural, obvious next step, and that any hesitation is either a phase you'll grow out of or a problem that needs solving. Like the default is yes, and anything else requires a lengthy, well-reasoned justification. So here's mine. And I want to start with the honest part, the part that usually gets dismissed before it even gets heard. </p>
+
+
+      <!-- 1 -->
+      <div class="section-break reveal">
+        <span class="section-number">01</span>
+        <span class="section-title">The Honest Part First</span>
+        <span class="section-rule"></span>
+      </div>
+
+      <p class="reveal">I genuinely love silence. Not in a poetic, romantic way, just in a very literal, everyday way where I need quiet to feel like myself. I have a low social battery and I recharge by doing nothing, by sitting with my own thoughts, by having long internal conversations with myself that don't require anything from anyone else. That's just how I'm wired. And when I try to imagine a child in that picture, a tiny person who by nature needs constant attention and energy and presence, who will call for you and need you and not understand the concept of "I just need five minutes", it doesn't just feel inconvenient. It feels like something I genuinely could not sustain without eventually running so empty that I'd have nothing real left to give.</p>
+
+      <p class="reveal">I hate loud noises at home. I hate mess. I find deep comfort in my money going exactly where I want it to go. And then there's the physical reality of pregnancy and childbirth, which I think women are somehow expected to either be terrified of or totally at peace with, and I fall firmly in the first camp. I have a low pain tolerance, genuinely and embarrassingly low. And I'm supposed to look at what childbirth actually involves and think that sounds worth it? People say you forget the pain afterward, that the love overrides it, and I believe them, I believe that's real for a lot of people. But I also think it's okay to look at that and decide it doesn't apply to you, that the trade doesn't feel like one you want to make, and that deciding so doesn't require an apology.</p>
+
+      <p class="reveal">Now here's the thing. I know how all of this sounds. I know the word "selfish" is probably sitting somewhere near the front of your mind right now. And I want to push back on that, not defensively, but genuinely, because I think the framing of selfishness misses something important about what it actually means to make this decision carefully.</p>
+
+      <p class="reveal">When I say I need silence, I'm not just describing a preference I'd like to protect. I'm describing something that, if ignored, affects the quality of presence I can offer another person, and a child especially. A child raised by a parent who is chronically depleted, overstimulated, quietly resentful of the noise they make just by existing, pays a price for that. They feel it in the way the house sits, in the way patience runs short, in the way love gets expressed through gritted teeth instead of genuine warmth. So when I say I don't want kids partly because I love quiet, what I'm really also saying is that I don't think it would be fair to bring a child into a home that isn't built for the kind of noise and need and beautiful chaos they would bring with them. That's not me refusing to grow or sacrifice a part of myself, it's me being honest about the shape of my life and whether a child would genuinely thrive inside it, which feels like exactly the kind of question you're supposed to ask before making an irreversible decision.</p>
+      <p class="reveal">And once I started thinking about it that way, the bigger questions started to feel less separate from the smaller ones and more like the same question asked at different scales.</p>
+
+     
+      <!-- 2 -->
+      <div class="section-break reveal">
+        <span class="section-number">02</span>
+        <span class="section-title">What I Watched Growing Up</span>
+        <span class="section-rule"></span>
+      </div>
+
+      <p class="reveal">I grew up in a single parent family after my parents divorced, and I think that experience shaped how I think about this more than almost anything else. Not in a way that made me bitter or cynical about love or family in general, but in a way that made me ask a question very early that I still haven't stopped asking: why did they have kids if they couldn't commit to the life that came with it?</p>
+      <p class="reveal">I want to be careful here because I'm not saying my parents were bad people, and I'm not saying divorce is a failure or that single parent families are broken or lesser. That's not what I'm getting at. What I'm getting at is the experience of being the child in the middle of something the adults around you couldn't hold together, and how that shapes your understanding of what it actually means to bring a life into the world. Because what I learned, from the inside of that experience, is that having children and being genuinely ready to raise children are two entirely different things, and the gap between them isn't some abstract thing people made up. It's something the child lives inside every single day. It shows up in the way stability feels conditional, in the way you learn early to read the emotional temperature of a room, in the way certain kinds of uncertainty become familiar in ways they probably shouldn't be for a kid.</p>
+      <p class="reveal">I already know what people will say to this. That I'm speaking from a place of personal pain, that my experience is colouring my judgment, that one family's circumstances shouldn't determine an entire worldview about parenthood. And there's a version of that critique worth taking seriously, because personal experience is always a lens, and lenses have angles and blind spots. But there's something patronising about the suggestion that lived experience should be bracketed out of a decision this intimate, as if the only valid way to think about parenthood is through some detached, theoretical framework that floats above the messiness of what families actually look like from the inside. What I saw growing up wasn't an argument against love or commitment or family. It was a clear illustration of what happens when people have children because it's the next thing you do, because it's expected, because everyone else is doing it, without genuinely reckoning with what that means for the person who doesn't get a choice in the matter, which is the child. That's not a wound I'm still bleeding from. It's something I watched closely and learned from, and it made me want to be more deliberate, not less, about a decision with that kind of permanence.</p>
+
+      <!-- 3 -->
+      <div class="section-break reveal">
+        <span class="section-number">03</span>
+        <span class="section-title">The World As It Already Is</span>
+        <span class="section-rule"></span>
+      </div>
+
+      <p class="reveal">Beyond the personal, there's also just the world. The actual, current, overwhelming world that a child would be born into. I know what social media does to young people's sense of self, I’ve watched how early it starts, how relentless it is, how the pressure to perform a curated version of yourself online has become something children navigate before they've even figured out who they are offline. Academic pressure compounds with every generation, and children are being asked to achieve and optimise themselves at ages where they should probably just be figuring out what they like and what makes them laugh. Climate change is not a distant hypothetical, it's something the next generation will inherit in very concrete ways, with costs and consequences that are unfolding as I am typing this. Economic instability, the rising cost of housing, the widening gap between what things cost and what people actually earn, all of that is real and it tends to fall hardest on people who are just starting out.</p>
+      <p class="reveal">Call it catastrophising if you want. I'd push back and say I'm just paying attention to what's already here.</p>
+      <p class="reveal">And honestly, the idea of bringing a child into all of that doesn't feel like pessimism to me. It feels like taking the weight of the decision seriously in a way the decision actually demands. People say you can't predict what will happen, that you'll just deal with it as it comes, and that's true in a practical sense, people do deal with it. But that answer sidesteps the part of the question I find hardest to let go of, which isn't whether hardship can be managed, but whether I'm comfortable knowingly bringing someone into a world I already know is difficult, without being certain I can give them enough of what they'd need to navigate it well.</p>
+
+
+      <!-- 4 -->
+      <div class="section-break reveal">
+        <span class="section-number">04</span>
+        <span class="section-title">What the Numbers Actually Say</span>
+        <span class="section-rule"></span>
+      </div>
+
+      <p class="reveal"><a href="https://www.channelnewsasia.com/singapore/total-fertility-rate-tfr-2025-record-low-citizen-population-5954306" class="ref" target="_blank">Singapore's total fertility rate dropped to 0.87 in 2025</a>, the lowest it has ever been, and the government is alarmed. Deputy Prime Minister Gan Kim Yong said in parliament that if no new measures are taken, Singapore's citizen population will start to shrink by the early 2040s. Assuming the fertility rate stays where it is, every 100 residents today will eventually have 44 children and 19 grandchildren. About 27,500 resident births were recorded in 2025, the lowest in Singapore's recorded history. One in five citizens is now aged 65 or older, compared to one in eight just a decade ago. The word used in parliament to describe all of this was "existential." <span class="aside">(not a word politicians reach for casually, and yet somehow the immediate response was a rebranding campaign)</span></p>
+      <p class="reveal">Not everyone reading those numbers sees only doom, and that's worth acknowledging. <a href="https://www.channelnewsasia.com/commentary/singapore-fertility-rate-tfr-existential-doom-opportunity-5976676" class="ref" target="_blank">Commentator Han Fook Kwang argued in a recent piece</a> that a shrinking population might also mean fewer people sharing a still-growing pie, and that the more useful question is whether Singapore can use the moment to genuinely invest in the people it does have, pointing to things like fully funded, world-class early childhood education as the kind of structural move that would actually change the calculus for families. It's a more generous read of the situation than most parliamentary speeches offer, and it's not wrong. But it also doesn't change the fact that the people choosing not to have children aren't doing so because nobody reframed the narrative for them.</p>
+      <p class="reveal">Because the people choosing not to have children, or choosing to have fewer, are not confused. They are not waiting for a reframe or a rebrand. Many of them have thought about this more carefully than previous generations were ever really asked to, weighing their mental health, their financial reality, their relationships, their sense of what they can genuinely offer, and the kind of world their child would grow up in. The numbers aren't falling because people forgot that children are meaningful or because nobody told them parenthood could be fulfilling. The numbers are falling because people are finally being honest, in larger numbers than before, about what the decision actually involves and what it actually costs, in every sense of that word. That's worth something, even if it makes for uncomfortable parliamentary debate.</p>
+
+
+      <!-- 5 -->
+      <div class="section-break reveal">
+        <span class="section-number">05</span>
+        <span class="section-title">On Money</span>
+        <span class="section-rule"></span>
+      </div>
+
+      <p class="reveal">Raising a child is expensive in a very concrete, non-abstract way, and I think people are weirdly reluctant to say that plainly without immediately softening it with something like "but of course it's worth it." In Singapore especially, the numbers are significant when you actually sit with them. Housing, education, enrichment, healthcare, the daily cost of keeping a small person alive and genuinely okay, and then doing it well, in a city where the cost of living keeps climbing in ways that outpace what most people in their twenties and thirties are actually earning. It's not just about whether you can technically afford a child in some minimum-viable sense. It's about whether you can give them a life that doesn't start them off already stretched thin, already behind, already in a household where money is a source of constant low-level stress that children absorb even when nobody's talking about it directly.</p>
+      <p class="reveal">The suggestion that financial hesitation is shallow, or just an excuse people reach for when they don't want to admit some deeper reluctance, frustrates me because it dismisses something genuinely responsible. Even commentators who are broadly optimistic about Singapore's demographic future acknowledge the cost burden is real, with proposals like fully subsidised, Montessori-standard preschools being floated as evidence that the numbers are not trivial. Wanting a child and being able to give one a stable, supported life are two different things, and understanding the distance between those two things clearly enough to take it seriously is not a failure of commitment or love. It's an honest accounting of what a child actually needs versus what you actually have, and doing that accounting before rather than after seems like exactly the right order of operations.</p>
+
+
+<!-- 6 -->
+      <div class="section-break reveal">
+        <span class="section-number">06</span>
+        <span class="section-title">The Things People Say</span>
+        <span class="section-rule"></span>
+      </div>
+
+      <div class="voices reveal">"But of course it's worth it." &nbsp;"You'll change your mind." &nbsp;"It's different when it's your own." &nbsp;"You'll never know real love until you're a parent." &nbsp;"You'll regret it one day." &nbsp;"Who will look after you when you're old?"</div>
+      <p class="voices-commentary reveal">(said with the full confidence of people who have never once been asked to justify the opposite choice)</p>
+
+      <p class="reveal">Fulfilment is genuinely not one thing. For some people it's parenthood, completely and without ambivalence, and I have no argument with that. For others it's a creative life, or deep and lasting friendships, or a career built around something they believe in, or the freedom to move through the world on their own terms without having to build every decision around another person's needs. None of those paths is inherently more meaningful than the others. The insistence that parenthood sits at the top of some hierarchy of meaningful experience says more about the assumptions the person making that argument grew up with than it does about the full range of what a human life can look like and feel like from the inside.</p>
+      <p class="reveal">The old age argument is the one I find hardest to sit with. The idea that you should have children so that you have someone to look after you when you can no longer look after yourself. I understand the fear underneath it, it's a real and very human fear about vulnerability and dependence and what the end of life looks like. But there's something uncomfortable about framing a child's existence as a solution to that fear, about building the justification for bringing a new person into the world around what they will eventually be able to provide for you. A child is not a retirement plan or a form of insurance against loneliness. They're a whole person who will grow up and have their own life and their own needs and their own complications, and the expectation that they will repay the fact of their existence with lifelong care is its own kind of transaction that rarely gets named as such. If companionship in old age is genuinely the primary reason someone wants to have a child, that is a far more straightforwardly self-serving motivation than anything I've described in this piece, and it tends not to get the same scrutiny. <span class="aside">(funny how that works)</span></p>
+
+<!-- 7 -->
+      <div class="section-break reveal">
+        <span class="section-number">07</span>
+        <span class="section-title">What the Decision Deserves</span>
+        <span class="section-rule"></span>
+      </div>
+
+      <p class="reveal">Parenthood gets romanticised in a way that makes it genuinely hard to think about clearly. The milestones, the legacy, the unconditional love. I'm not trying to argue any of that away. But underneath all of it is something enormous and permanent and not guaranteed to go well, a lifelong responsibility that cannot be undone, that doesn't come with an opt-out, that unfolds inside a world that is genuinely uncertain in ways that feel more acute now than they might have a generation ago. And sitting with all of that, really sitting with it instead of letting the romance of the idea carry you past the weight of it, isn't cynical. It's what the decision actually deserves.</p>
+      <p class="reveal">The hesitation that a lot of young people feel today, the careful weighing, the refusal to treat parenthood as a given, isn't immaturity or selfishness or a failure to understand what really matters. It might be the most honest response available, which is to look at something with lifelong consequences and decide to take it seriously before committing to it, rather than after.</p>
+      <p class="reveal">Choosing to have children is valid. Choosing not to is equally valid. And the reasons don't have to be grand or perfectly articulated or free from anything personal or complicated to deserve respect. Even the ones that sound small on the surface, the ones about silence and mess and pain and money, are usually pointing at something real and considered when you actually follow them all the way through.</p>
+      <p class="reveal">This is a decision that deserves honesty above everything else. Not performance, not the answer that makes everyone else comfortable, not a mindset reset handed down from a parliamentary debate about existential population decline.</p>
+      <p class="reveal">Because bringing a life into the world should never be something you just do because it's time, or because everyone expects it, or because the alternative requires too much explaining. It should be something you actually choose, with full awareness of everything that means, everything it costs, and everything that follows from it for a person who never got to weigh in on the decision themselves.</p>
+      
+    </div>
+
+    <footer>
+      <span>世界 · 2025</span>
+      <a href="index.html">← Back to the piece</a>
+    </footer>
+
+  </div>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
